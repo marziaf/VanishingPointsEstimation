@@ -1,4 +1,4 @@
-%% Load dataset
+%% Prepare dataset files
 datasetDir = "../dataset/tvpd_dataset/";
 imageFileNames = dir(fullfile(datasetDir, "*.jpg"));
 % Store file names to be loaded in execution (.jpg and .mat)
@@ -10,3 +10,8 @@ for k=1:size(imageFileNames)
     imageData(k).imageGTFile = ...
         fullfile(imageFileNames(k).folder, strcat(basename, '.mat'));
 end
+
+%% Pre-processing: get the segments
+
+%TODO work on all the images
+getSegments(imageData(1).imageFile);
