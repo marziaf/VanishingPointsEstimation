@@ -123,9 +123,9 @@ function [maxError] = maxError(path, segmentEndpoints)
     maxError = -1;
     % maxError: find maximum distance between path and line
     for k=1:size(path, 1)
-        m = ( segmentEndpoints(:,4) - segmentEndpoints(:,2)) /  ...
-            ( segmentEndpoints(:,3) - segmentEndpoints(:,1));
-        c = segmentEndpoints(:,4) - m * segmentEndpoints(:,3);
+        m = ( segmentEndpoints(4) - segmentEndpoints(2)) /  ...
+            ( segmentEndpoints(3) - segmentEndpoints(1));
+        c = segmentEndpoints(4) - m * segmentEndpoints(3);
         maxError = max(maxError, distancePointLine(path(k, :), [m c]));
     end
 end

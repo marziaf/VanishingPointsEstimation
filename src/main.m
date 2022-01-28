@@ -11,7 +11,14 @@ for k=1:size(imageFileNames)
         fullfile(imageFileNames(k).folder, strcat(basename, '.mat'));
 end
 
-%% Pre-processing: get the segments
+%% Pre-processing: get the lines
 
 %TODO work on all the images
-%getSegments(imageData(1).imageFile);
+segs = getSegments(imageData(1).imageFile);
+disp("Segments extracted");
+% Segments to homogeneous lines
+lines = segToLine(segs);
+
+%% Extract vanishing points: J-linkage
+
+numSamples = size(lines, 2) ^ 2;
