@@ -14,4 +14,4 @@ end
 %% Pre-processing: get the segments
 
 %TODO work on all the images
-getSegments(imageData(1).imageFile);
+%getSegments(imageData(1).imageFile);
