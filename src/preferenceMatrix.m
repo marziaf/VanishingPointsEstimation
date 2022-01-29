@@ -1,7 +1,8 @@
-function [preference, vps] = preferenceMatrix(segments, numHyp, debugImg)
+function [preference, vps] = preferenceMatrix(segments, thresh, numHyp, debugImg)
     % preferenceMatrix: returns the preference matrix of the given minimal 
     % sample sets
     % segments: the segments at the base of the matrix
+    % thresh: consistency threshold (opt)
     % numHyp: the number of hypothesis/vps to consider (opt)
     % debugImg: the image file name to use in debug (opt). If none, don't
     % show degug disp/plot
@@ -9,8 +10,9 @@ function [preference, vps] = preferenceMatrix(segments, numHyp, debugImg)
     arguments
         segments(:,4) {mustBeNumeric}
         %TODO parameter tuning for exponent
+        thresh {mustBePositive} = 10
         numHyp  {mustBePositive} = int16(size(segments, 1) ^ 1.3)
-        debugImg {mustBeFile} = "";
+        debugImg {mustBeFile} = "preferenceMatrix.m"; %TODO wow, such an awful solution
     end
 
     numEdges = size(segments, 1);
@@ -30,11 +32,14 @@ function [preference, vps] = preferenceMatrix(segments, numHyp, debugImg)
 
         % calculate the consistency of vp with all the edges
         for row=1:numEdges
-            preference(row, col) = consistency(vp, segments(row, :));
+            preference(row, col) = ...
+                consistency(vp, segments(row, :)) <= thresh;
         end
     end
 
-    if debugImg ~= ""
+
+
+    if debugImg ~= "preferenceMatrix.m"
         figure, imshow(imread(debugImg)), hold on, axis auto;
         plot(vps(1,:) ./ vps(3,:), vps(2,:) ./ vps(3,:), 'ro');
     end 
