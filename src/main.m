@@ -10,15 +10,18 @@ for k=1:size(imageFileNames)
     imageData(k).imageGTFile = ...
         fullfile(imageFileNames(k).folder, strcat(basename, '.mat'));
 end
+disp("Dataset located");
 
 %% Pre-processing: get the lines
 
 %TODO work on all the images
-segs = getSegments(imageData(1).imageFile);
+refImg = imageData(1).imageFile;
+segs = getSegments(refImg);
 disp("Segments extracted");
-% Segments to homogeneous lines
-lines = segToLine(segs);
 
 %% Extract vanishing points: J-linkage
 
-numSamples = size(lines, 2) ^ 2;
+% Obtain the preference matrix
+[preference, vps] = preferenceMatrix(segs);
+
+disp("Preference matrix computed")

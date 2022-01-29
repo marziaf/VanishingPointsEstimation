@@ -8,7 +8,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
     
     arguments
         imgFile {mustBeFile}
-        minLength {mustBeNumeric} = 20
+        minLength {mustBeNumeric} = 60
         debug logical = false
     end
     
