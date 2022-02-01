@@ -27,7 +27,7 @@ function [preference] = preferenceMatrix(segments, thresh, numHyp, debugImg)
             s2 = segments(randi(numEdges),:);
         end
         % calculate their corresponding vanishing point
-        vp = vpEstimation2(segToLine(s1), segToLine(s2));
+        vp = vpEstimation2(lineOps.segToLine(s1), lineOps.segToLine(s2));
         vps(:,col) = vp;
 
         % calculate the consistency of vp with all the edges
@@ -37,27 +37,11 @@ function [preference] = preferenceMatrix(segments, thresh, numHyp, debugImg)
         end
     end
 
-
-
     if debugImg ~= "preferenceMatrix.m"
         figure, imshow(imread(debugImg)), hold on, axis auto;
         plot(vps(1,:) ./ vps(3,:), vps(2,:) ./ vps(3,:), 'ro');
     end 
 
-end
-
-
-function [line] = segToLine(seg)
-    % SegToLine: given a segment, return the corresponding homogeneous line
-    % seg: segment of the type [x1, y1, x2, y2]
-    % returns: homogeneous line with same direction as segment
-    arguments
-        seg(1,4) {mustBeNumeric}
-    end
-    p1 = [seg(1:2)'; 1];
-    p2 = [seg(3:4)'; 1];
-    line = cross(p1, p2);
-    line = line ./ norm(line);
 end
 
 
@@ -76,14 +60,7 @@ function [c] = consistency(v, e)
     % e: edge
     centroid = [mean([e(1) e(3); e(2) e(4)], 2); 1];
     l = cross(v, centroid);
-    c = distancePointLine([e(1); e(2); 1], l);
+    c = lineOps.distancePointLine([e(1); e(2); 1], l);
 end
 
 
-function d = distancePointLine(p, l)
-    % distancePointLine
-    % p: point in homo coord
-    % l: line in homo coord
-    assert(p(3) ~= 0);
-    d = abs(l' * p) / sqrt(l(1)^2 + l(2)^2);
-end
