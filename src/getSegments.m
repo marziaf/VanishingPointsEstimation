@@ -24,7 +24,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
     lenSeg = 0;
     for k=1:size(startx)
         from = [startx(k), starty(k)];
-        [pts, len, track] = navigateSegment(from, internal);
+        [pts, len, track] = navigateSegment(from);
         if len > minLength
             % Fit line and check validity
             err = maxError(track, pts);
@@ -41,6 +41,44 @@ function [segments] = getSegments(imgFile, minLength, debug)
            plot([ segments(k,2), segments(k,4)], [segments(k,1), segments(k, 3)]);
         end
     end
+
+function [endPoints, length, track] = navigateSegment(from)
+    % navigateSegment: search on edges
+    % from: coordinates of starting point [x,y]
+    % graph: logic matrix representing the graph
+    % returns:
+    % endpoints of the path
+    % the length of the path
+    % coordinates containing the path
+
+    visited = zeros(size(internal));
+    current = from;
+    deltaNeighbors = [[-1, -1]; [-1, 0]; [-1, 1]; [0, -1]; 
+        [1, -1]; [1, 0]; [1, 1]; [0, 1]];
+    length = 1;
+    while current ~= [-1, -1]
+        visited(current(1), current(2)) = 1;
+        length = length + 1;
+        found = false;
+        % look for next in path
+        for it=1:size(deltaNeighbors, 1)
+            px = current(1) + deltaNeighbors(it,1);
+            py = current(2) + deltaNeighbors(it,2);
+            if inBound([px, py], size(internal)) && internal(px, py) == 1 && ~visited(px, py)
+                current = [px, py];
+                found = true;
+                break
+            end
+        end
+        % reached end
+        if ~found
+            endPoints = [from, current];
+            current = [-1, -1];
+        end
+    end
+    [tx, ty] = find(visited);
+    track = [tx, ty];
+end
 end
 
 
@@ -73,43 +111,7 @@ function [internal, endpoints, junctions] = getGraphConnections(img, debug)
 end
 
 
-function [endPoints, length, track] = navigateSegment(from, graph)
-    % navigateSegment: search on edges
-    % from: coordinates of starting point [x,y]
-    % graph: logic matrix representing the graph
-    % returns:
-    % endpoints of the path
-    % the length of the path
-    % coordinates containing the path
 
-    visited = zeros(size(graph));
-    current = from;
-    deltaNeighbors = [[-1, -1]; [-1, 0]; [-1, 1]; [0, -1]; 
-        [1, -1]; [1, 0]; [1, 1]; [0, 1]];
-    length = 1;
-    while current ~= [-1, -1]
-        visited(current(1), current(2)) = 1;
-        length = length + 1;
-        found = false;
-        % look for next in path
-        for k=1:size(deltaNeighbors, 1)
-            px = current(1) + deltaNeighbors(k,1);
-            py = current(2) + deltaNeighbors(k,2);
-            if inBound([px, py], size(graph)) && graph(px, py) == 1 && ~visited(px, py)
-                current = [px, py];
-                found = true;
-                break
-            end
-        end
-        % reached end
-        if ~found
-            endPoints = [from, current];
-            current = [-1, -1];
-        end
-    end
-    [tx, ty] = find(visited);
-    track = [tx, ty];
-end
 
 function [inside] = inBound(p, bound)
     % inBound: return true if p is between [1,1] and bound
@@ -122,10 +124,10 @@ end
 function [maxError] = maxError(path, segmentEndpoints)
     maxError = -1;
     % maxError: find maximum distance between path and line
+    m = ( segmentEndpoints(4) - segmentEndpoints(2)) /  ...
+        ( segmentEndpoints(3) - segmentEndpoints(1));
+    c = segmentEndpoints(4) - m * segmentEndpoints(3);
     for k=1:size(path, 1)
-        m = ( segmentEndpoints(4) - segmentEndpoints(2)) /  ...
-            ( segmentEndpoints(3) - segmentEndpoints(1));
-        c = segmentEndpoints(4) - m * segmentEndpoints(3);
         maxError = max(maxError, distancePointLine(path(k, :), [m c]));
     end
 end
