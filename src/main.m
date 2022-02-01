@@ -22,6 +22,9 @@ disp("Segments extracted");
 %% Extract vanishing points: J-linkage
 
 % Obtain the preference matrix
-[preference, vps] = preferenceMatrix(segs);
+preference = preferenceMatrix(segs);
+disp("Preference matrix computed");
 
-disp("Preference matrix computed")
+% cluster
+clusters = jaccardClustering(preference, segs);
+disp("Edges clustered");
