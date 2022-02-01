@@ -1,4 +1,4 @@
-function [preference, vps] = preferenceMatrix(segments, thresh, numHyp, debugImg)
+function [preference] = preferenceMatrix(segments, thresh, numHyp, debugImg)
     % preferenceMatrix: returns the preference matrix of the given minimal 
     % sample sets
     % segments: the segments at the base of the matrix
@@ -6,7 +6,7 @@ function [preference, vps] = preferenceMatrix(segments, thresh, numHyp, debugImg
     % numHyp: the number of hypothesis/vps to consider (opt)
     % debugImg: the image file name to use in debug (opt). If none, don't
     % show degug disp/plot
-    % returns: preference matrix and hypothesis vanishing points
+    % returns: preference matrix
     arguments
         segments(:,4) {mustBeNumeric}
         %TODO parameter tuning for exponent
