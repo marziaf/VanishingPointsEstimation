@@ -17,6 +17,10 @@ classdef lineOps
             % distancePointLine
             % p: point in homo coord
             % l: line in homo coord
+            arguments
+                p(3,1) {mustBeNumeric}
+                l(3,1) {mustBeNumeric}
+            end
             assert(p(3) ~= 0);
             d = abs(l' * p) / sqrt(l(1)^2 + l(2)^2);
         end

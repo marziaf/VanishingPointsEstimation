@@ -13,10 +13,11 @@ end
 disp("Dataset located");
 
 %% Pre-processing: get the lines
-
+tic
 %TODO work on all the images
 refImg = imageData(1).imageFile;
 segs = getSegments(refImg);
+toc
 disp("Segments extracted");
 
 %% Extract vanishing points: J-linkage
@@ -25,6 +26,28 @@ disp("Segments extracted");
 preference = preferenceMatrix(segs);
 disp("Preference matrix computed");
 
-% cluster
+% Clustering
+tic
 clusters = jaccardClustering(preference, segs);
+toc
 disp("Edges clustered");
+
+% Remove outliers
+for k = keys(clusters)
+    if size( clusters(k{1}).edges, 2 ) < 3
+        remove(clusters, k{1});
+        disp("Removed cluster " + str(k{1}) + " because it was outlier");
+    end
+end
+disp("Checked for outliers");
+%% 
+
+% Vanishing points of clusters (drop the old map for simplicity)
+id = 1;
+for oldId = keys(clusters)
+    classification(id) = struct('vp', getClusterVPs(clusters(oldId{1}).edges), ...
+        'edges', clusters(oldId{1}).edges);
+    id = id + 1;
+end
+disp("Obtained cluster vanishing points");
+
