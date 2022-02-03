@@ -40,7 +40,7 @@ for k = keys(clusters)
     end
 end
 disp("Checked for outliers");
-%% 
+%% Selection of meaningful directions
 
 % Vanishing points of clusters (drop the old map for simplicity)
 id = 1;
@@ -51,3 +51,16 @@ for oldId = keys(clusters)
 end
 disp("Obtained cluster vanishing points");
 
+manhDir = manhattanDirections(classification);
+disp("Obtained manhattan directions");
+
+%% Visual check
+
+figure, imshow(refImg), hold on;
+colors = ["red", "green", "blue"];
+for k = 1:size(manhDir, 2)
+    for e = 1:size(manhDir(k).edges, 1)
+        edge = manhDir(k).edges(e, :);
+        plot(edge(2:2:4), edge(1:2:4), Color=colors(k)); % TODO somewhere the coordinates are inverted
+    end
+end
