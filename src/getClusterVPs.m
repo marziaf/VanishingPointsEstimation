@@ -1,7 +1,6 @@
 function [vp] = getClusterVPs(edges)
     % getClusterVPs: returns the vanishing point associated to a set of edges
     % edges: the edges of the cluster
-    % w: ??? TODO
     % returns: vanishing point (in homogeneous coordinates)
     arguments
         edges(:,4) {mustBeNumeric}
