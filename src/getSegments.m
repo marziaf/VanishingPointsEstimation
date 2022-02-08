@@ -8,7 +8,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
     
     arguments
         imgFile {mustBeFile}
-        minLength {mustBeNumeric} = 60
+        minLength {mustBeNumeric} = 100
         debug logical = false
     end
     
@@ -22,6 +22,10 @@ function [segments] = getSegments(imgFile, minLength, debug)
     [startx, starty] = find(endpoints);
     segments = [];
     lenSeg = 0;
+    % Navigation variables shared to improve performance
+    visited = zeros(size(internal));
+    deltaNeighbors = [[-1, -1]; [-1, 0]; [-1, 1]; [0, -1]; 
+    [1, -1]; [1, 0]; [1, 1]; [0, 1]];
     for k=1:size(startx)
         from = [startx(k), starty(k)];
         [pts, len, track] = navigateSegment(from);
@@ -34,6 +38,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
             end
         end
     end
+
     if debug
         f = figure();
         figure(f), imshow(img), hold on;
@@ -42,7 +47,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
         end
     end
 
-function [endPoints, length, track] = navigateSegment(from)
+function [endPoints, length, path] = navigateSegment(from)
     % navigateSegment: search on edges
     % from: coordinates of starting point [x,y]
     % graph: logic matrix representing the graph
@@ -51,13 +56,11 @@ function [endPoints, length, track] = navigateSegment(from)
     % the length of the path
     % coordinates containing the path
 
-    visited = zeros(size(internal));
     current = from;
-    deltaNeighbors = [[-1, -1]; [-1, 0]; [-1, 1]; [0, -1]; 
-        [1, -1]; [1, 0]; [1, 1]; [0, 1]];
     length = 1;
     while current ~= [-1, -1]
-        visited(current(1), current(2)) = 1;
+        visited(current(1), current(2)) = true;
+        path(length,:) = current;
         length = length + 1;
         found = false;
         % look for next in path
@@ -76,8 +79,8 @@ function [endPoints, length, track] = navigateSegment(from)
             current = [-1, -1];
         end
     end
-    [tx, ty] = find(visited);
-    track = [tx, ty];
+    %[tx, ty] = find(visited);
+    %track = [tx, ty];
 end
 end
 
