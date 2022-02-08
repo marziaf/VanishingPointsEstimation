@@ -15,8 +15,19 @@ disp("Dataset located");
 %% Pre-processing: get the lines
 tic
 %TODO work on all the images
-refImg = imageData(1).imageFile;
+refImg = imageData(60).imageFile;
 segs = getSegments(refImg);
+%{
+bw = rgb2gray(imread(refImg));
+[H, theta, rho] = hough(bw); 
+hgPeaks = houghpeaks(H, 200, 'Theta', theta, 'Threshold', 0.05 * max(H(:)));     % identify the peaks in the diagram, which correspond to candidate lines
+hgLines = houghlines(bw, theta, rho, hgPeaks,'FillGap', 3);
+numLines = size(hgLines, 2);
+segs = zeros(numLines, 4);
+for k = 1:numLines
+    segs(k, :) = [hgLines(k).point1, hgLines(k).point2];
+end
+%}
 t = toc;
 disp("Segments extracted in " + t + " sec");
 
@@ -34,7 +45,7 @@ disp("Edges clustered in " + t + " sec");
 
 % Remove outliers
 for k = keys(clusters)
-    if size( clusters(k{1}).edges, 2 ) < 3
+    if size( clusters(k{1}).edges, 1 ) < 3
         remove(clusters, k{1});
         disp("Removed cluster " + str(k{1}) + " because it was outlier");
     end
@@ -80,6 +91,7 @@ end
 %% Visual check
 
 figure, imshow(refImg), hold on, axis auto;
+plot(principalPoint(2), principalPoint(1), Color='yellow', Marker="*", MarkerSize=20, LineWidth=5)
 colors = ["red", "green", "blue"];
 for k = 1:size(manhDir, 2)
     for e = 1:size(manhDir(k).edges, 1)
