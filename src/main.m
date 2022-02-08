@@ -15,7 +15,7 @@ disp("Dataset located");
 %% Pre-processing: get the lines
 tic
 %TODO work on all the images
-refImg = imageData(1).imageFile;
+refImg = imageData(60).imageFile;
 segs = getSegments(refImg);
 toc
 disp("Segments extracted");
@@ -29,14 +29,14 @@ disp("Preference matrix computed");
 % Clustering
 tic
 clusters = jaccardClustering(preference, segs);
-toc
-disp("Edges clustered");
+t = toc;
+disp("Edges clustered in " + t + " sec");
 
 % Remove outliers
 for k = keys(clusters)
-    if size( clusters(k{1}).edges, 2 ) < 3
+    if size( clusters(k{1}).edges, 1 ) < 3
         remove(clusters, k{1});
-        disp("Removed cluster " + str(k{1}) + " because it was outlier");
+        disp("Removed cluster " + string(k{1}) + " because it was outlier");
     end
 end
 disp("Checked for outliers");
