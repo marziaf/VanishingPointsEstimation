@@ -70,7 +70,7 @@ function [t] = autoThresh(type)
     if type == algorithms.jaccard
         t = 10;
     elseif type == algorithms.tanimoto
-        t = 0.1;
+        t = 0.5;
     else
         throw(MException("Invalid algorithm type"));
     end
