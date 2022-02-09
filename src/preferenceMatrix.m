@@ -1,6 +1,6 @@
 function [preference] = preferenceMatrix(segments, type, thresh, numHyp, debugImg)
-    % jaccPreferenceMatrix: returns the preference matrix of the given minimal 
-    % sample sets based on jaccard distance
+    % preferenceMatrix: returns the preference matrix of the given minimal 
+    % sample sets based on jaccard or tanimoto distance
     % segments: the segments at the base of the matrix
     % type: jaccard or tanimoto
     % thresh: consistency threshold for jaccard or time constant for tanimoto (opt)

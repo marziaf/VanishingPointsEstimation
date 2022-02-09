@@ -1,15 +1,17 @@
-function [clusters] = jaccardClustering(preference, edges)
-    % jaccardClustering: cluster edges from preference matrix
+function [clusters] = clustering(preference, edges, type)
+    % clustering: cluster edges from preference matrix
     % preference: preference matrix relative to the edges
     % edges: the edges asssociated to the preference matrix
+    % type: tanimoto or jaccard
     % returns: map of clusters
     %   map key: integer representing the id of the cluster
     %   map values: struct containing the centroid of the cluster (its 
     %   characteristic function) and the set of edges belonging to the
     %   cluster in shape [[x1, y1, x2, y2]; ...]
     arguments
-        preference(:,:) logical
+        preference(:,:) {mustBeNumericOrLogical}
         edges(:, 4) {mustBeNumeric}
+        type algorithms
     end
     
     %% Initialization
@@ -27,8 +29,7 @@ function [clusters] = jaccardClustering(preference, edges)
     for c = 1:numEdges
         for r = 1:numEdges
             if (r ~= c)
-                distances(r, c) = jaccardDistance( ...
-                    clusters(r).centroid, clusters(c).centroid);
+                distances(r, c) = distance( clusters(r).centroid, clusters(c).centroid);
             end
         end
     end
@@ -46,16 +47,34 @@ function [clusters] = jaccardClustering(preference, edges)
     end
 
 
+
+
+    function [d] = distance(s1, s2)
+        if (type == algorithms.jaccard)
+            d = algorithms.jaccardDistance(s1, s2);
+        elseif (type == algorithms.tanimoto)
+            d = algorithms.tanimotoDistance(s1, s2);
+        else
+            throw(MException("Invalid algorithm type"));
+        end
+    end
+
     function merge(s1, s2)
         % merge: merges two clusters
         % s1 & s2: edges id
         assert(s1 ~= s2);
         assert(isKey(clusters, s1) && isKey(clusters, s2));
 
-        % find the centroid of the cluster (intersection of its members)
-        newCentroid = clusters(s1).centroid & clusters(s2).centroid;
+        % find the centroid of the cluster (min of its members)
+        if type == algorithms.jaccard
+            newCentroid = clusters(s1).centroid & clusters(s2).centroid;
+        elseif type == algorithms.tanimoto
+            newCentroid = min([ clusters(s1).centroid; clusters(s2).centroid ]);
+        end
+
         % merge the sets of edges
         newEdgesSet = [ clusters(s1).edges;  clusters(s2).edges ];
+
         % Put the new cluster in s1
         clusters(s1) = struct('centroid', newCentroid, 'edges', newEdgesSet);
         % delete merged
@@ -64,8 +83,7 @@ function [clusters] = jaccardClustering(preference, edges)
         for s = 1:numEdges
             % update distances with new cluster
             if isKey(clusters, s) && s ~= s1
-                d = jaccardDistance( ...
-                    clusters(s1).centroid, clusters(s).centroid);
+                d = distance( clusters(s1).centroid, clusters(s).centroid);
                 distances(s, s1) = d;
                 distances(s1, s) = d; % symmetric matrix
             end
@@ -73,17 +91,7 @@ function [clusters] = jaccardClustering(preference, edges)
             distances(s2, s) = 2;
             distances(s, s2) = 2;
         end
+        
     end
 
 end
-
-
-function [d] = jaccardDistance(s1, s2)
-    % jaccardDistance: j. distance between sets
-    % s1 & s2: characteristic function of the sets
-    un = nnz(s1 | s2);
-    in = nnz(s1 & s2);
-    d = (un - in) / un;
-end
-
-
