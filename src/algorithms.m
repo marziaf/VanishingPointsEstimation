@@ -1,5 +1,15 @@
 classdef algorithms
     methods(Static)
+        %% CONSISTENCY
+        function [c] = consistency(v, e)
+            % consistency: consistency between vanishing point and edge
+            % v: vanishing point
+            % e: edge
+            centroid = [mean([e(1) e(3); e(2) e(4)], 2); 1];
+            l = cross(v, centroid);
+            c = lineOps.distancePointLine([e(1); e(2); 1], l);
+        end
+
         %% PREFERENCE MATRIX UTILS
         function [p] = jaccardPreferenceFun(v, e, thresh)
             % jaccardPreference: the function used to compute the 
@@ -12,7 +22,7 @@ classdef algorithms
                 e(1, 4) {mustBeNumeric}
                 thresh {mustBePositive}
             end
-            p = consistency(v, e) <= thresh;
+            p = algorithms.consistency(v, e) <= thresh;
         end
         
         function [phi] = tanimotoPreferenceFun(v, e, tau)
@@ -26,7 +36,7 @@ classdef algorithms
                 e(1, 4) {mustBeNumeric}
                 tau {mustBePositive}
             end
-            d = consistency(v, e);
+            d = algorithms.consistency(v, e);
             if d < 5 * tau
                 phi = exp(-d/tau);
             else
