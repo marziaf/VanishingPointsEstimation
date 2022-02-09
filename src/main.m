@@ -22,7 +22,10 @@ if ~exist(outDirImJ, 'dir')
 end
 disp("Dataset located");
 
-for imID = 1:2 %1:size(imageData, 2)
+set(0, 'DefaultFigureVisible', 'off');
+
+
+for imID = 1:size(imageData, 2)
     %% Pre-processing: get the lines
     refImg = imageData(imID).imageFile;
     [~, name, ~] = fileparts(refImg);
@@ -72,20 +75,21 @@ for imID = 1:2 %1:size(imageData, 2)
         
         %% Visual check
         f = figure(Visible="off"); 
+        set(0, 'currentfigure', f);
         if algorithm == algorithms.jaccard
             outFile = fullfile(outDirImJ, name);
         else
             outFile = fullfile(outDirImT, name);
         end
-        figure(f), imshow(refImg), hold on, title( ...
+        imshow(refImg), hold on, title( ...
             name + " -- " + string(algorithm), Interpreter="none");
         colors = ["red", "green", "blue"];
         for k = 1:size(manhDir, 2)
-            figure(f), plot([manhDir(k).edges(:, 2), manhDir(k).edges(:, 4)]', ...
-                [manhDir(k).edges(:, 1), manhDir(k).edges(:, 3)]', Color=colors(k)); % TODO somewhere the coordinates are inverted
+            plot([manhDir(k).edges(:, 2), manhDir(k).edges(:, 4)]', ...
+                [manhDir(k).edges(:, 1), manhDir(k).edges(:, 3)]', ...
+                Color=colors(k), LineWidth=2);
         end
-        %figure(f), hold off;
-        %disp("Saving " + name + " - " + string(algorithm));
-        %saveas(f, outFile, 'png');
+        disp("Saving " + name + " - " + string(algorithm));
+        saveas(f, outFile, 'png');
     end
 end

@@ -12,8 +12,8 @@ function [segments] = getSegments(imgFile, minLength, debug)
         debug logical = false
     end
     
-    % Load image and convert to grayscale
-    img = imread(imgFile);
+    % Load image and convert to grayscale (after equalizing)
+    img = histeq(imread(imgFile));
     img = rgb2gray(img);
     
     % Get edges and pixel classification
