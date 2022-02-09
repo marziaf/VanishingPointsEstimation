@@ -1,17 +1,19 @@
-function [preference] = jaccPreferenceMatrix(segments, thresh, numHyp, debugImg)
+function [preference] = preferenceMatrix(segments, type, thresh, numHyp, debugImg)
     % jaccPreferenceMatrix: returns the preference matrix of the given minimal 
     % sample sets based on jaccard distance
     % segments: the segments at the base of the matrix
-    % thresh: consistency threshold (opt)
+    % type: jaccard or tanimoto
+    % thresh: consistency threshold for jaccard or time constant for tanimoto (opt)
     % numHyp: the number of hypothesis/vps to consider (opt)
     % debugImg: the image file name to use in debug (opt). If none, don't
     % show degug disp/plot
     % returns: preference matrix
     arguments
         segments(:,4) {mustBeNumeric}
-        thresh {mustBePositive} = 10
+        type algorithms
+        thresh {mustBePositive} = autoThresh(type)
         numHyp  {mustBePositive} = int16(size(segments, 1) ^ 1.3)
-        debugImg {mustBeFile} = "jaccPreferenceMatrix.m"; %TODO wow, such an awful solution
+        debugImg {mustBeFile} = "preferenceMatrix.m"; %TODO wow, such an awful solution
     end
 
     numEdges = size(segments, 1);
@@ -29,18 +31,28 @@ function [preference] = jaccPreferenceMatrix(segments, thresh, numHyp, debugImg)
         vp = vpEstimation2(lineOps.segToLine(s1), lineOps.segToLine(s2));
         vps(:,col) = vp;
 
-        % calculate the consistency of vp with all the edges
+        % calculate the consistency of vp with all the edges and fill
+        % preference matrix
         for row=1:numEdges
-            preference(row, col) = ...
-                consistency(vp, segments(row, :)) <= thresh;
+            preference(row, col) = preferenceFunction(vp, segments(row, :));
         end
     end
 
-    if debugImg ~= "jaccPreferenceMatrix.m"
+    if debugImg ~= "preferenceMatrix.m"
         figure, imshow(imread(debugImg)), hold on, axis auto;
         plot(vps(1,:) ./ vps(3,:), vps(2,:) ./ vps(3,:), 'ro');
     end 
 
+
+    function [p] = preferenceFunction(v, e)
+        if (type == algorithms.jaccard)
+            p = algorithms.jaccardPreferenceFun(v, e, thresh);
+        elseif (type == algorithms.tanimoto)
+            p = algorithms.tanimotoPreferenceFun(v, e, thresh);
+        else
+            throw(MException("Invalid algorithm type"));
+        end
+    end
 end
 
 
@@ -52,5 +64,16 @@ function [vp] = vpEstimation2(l1, l2)
     vp = vp ./ norm(vp); % reduce numerical errors
 end
 
+
+function [t] = autoThresh(type)
+    % Automatic threshold if none indicated
+    if type == algorithms.jaccard
+        t = 10;
+    elseif type == algorithms.tanimoto
+        t = 0.1;
+    else
+        throw(MException("Invalid algorithm type"));
+    end
+end
 
 
