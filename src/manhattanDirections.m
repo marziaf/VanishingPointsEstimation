@@ -15,7 +15,8 @@ function [manhDir] = manhattanDirections(classes)
         card(k) = size(classes(k).edges, 1);
     end
 
-    thresh = 0.05 * sum(card); % threshold for outliers
+    %thresh = 0.05 * sum(card); % threshold for outliers
+    thresh = 0;
     for k = 1:min(3, numClasses)
         [M, idx] = max(card);
         if M < thresh
