@@ -17,13 +17,13 @@ tic
 %TODO work on all the images
 refImg = imageData(60).imageFile;
 segs = getSegments(refImg);
-toc
-disp("Segments extracted");
+t = toc
+disp("Segments extracted in " + t + seconds);
 
 %% Extract vanishing points: J-linkage
 
 % Obtain the preference matrix
-preference = preferenceMatrix(segs);
+preference = jaccPreferenceMatrix(segs);
 disp("Preference matrix computed");
 
 % Clustering
