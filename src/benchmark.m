@@ -33,6 +33,7 @@ for d = 1:size(data, 2)
     gtVps(:, sanitizec) = [];
     % Extract directions
     expDir = expVps(1:2, :); expDir = expDir ./ vecnorm(expDir);
+    tmp = expDir(1,:); expDir(1,:) = expDir(2,:); expDir(2,:) = tmp;
     gtDir = gtVps(1:2, :); gtDir = gtDir ./ vecnorm(gtDir);
     if size(gtVps, 2) == 3 % TODO this check is only temporary, remove
         for vix = 1:size(expDir, 2)
