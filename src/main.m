@@ -120,10 +120,12 @@ for imID = 1:20%size(imageData, 2)
         imshow(refImg), hold on, title( ...
             name + " -- " + string(algorithm), Interpreter="none");
         colors = ["red", "green", "blue"];
-        for k = 1:size(manhDir, 2)
-            plot([manhDir(k).edges(:, 2), manhDir(k).edges(:, 4)]', ...
-                [manhDir(k).edges(:, 1), manhDir(k).edges(:, 3)]', ...
-                Color=colors(k), LineWidth=2);
+        if ~isempty(manhDir(1).vp)
+            for k = 1:size(manhDir, 2)
+                plot([manhDir(k).edges(:, 2), manhDir(k).edges(:, 4)]', ...
+                    [manhDir(k).edges(:, 1), manhDir(k).edges(:, 3)]', ...
+                    Color=colors(k), LineWidth=2);
+            end
         end
         disp("Saving " + name + " - " + string(algorithm));
         saveas(f, outFile, 'png'); 
