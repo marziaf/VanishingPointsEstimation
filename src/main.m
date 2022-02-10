@@ -23,9 +23,9 @@ end
 disp("Dataset located");
 
 set(0, 'DefaultFigureVisible', 'off');
-
-
-for imID = 1:size(imageData, 2)
+idxData = 0;
+data = struct('image', [], 'algorithm', [], 'numVps', 0, 'manhDirs', [], 'calibration', []);
+for imID = 1:20%size(imageData, 2)
     %% Pre-processing: get the lines
     refImg = imageData(imID).imageFile;
     [~, name, ~] = fileparts(refImg);
@@ -103,6 +103,12 @@ for imID = 1:size(imageData, 2)
         else
             disp("Not enough vanishing points extracted to calibrate the image!")
         end
+        %% Store data
+        if ~hasBeenCalibrated
+            Kest = [];
+        end
+        idxData = idxData + 1;
+        data(idxData) = struct('image', name, 'algorithm', algorithm, 'numVps', size(vps, 2), 'manhDirs', vps, 'calibration', Kest);
         %% Visual check
         f = figure(Visible="off"); 
         set(0, 'currentfigure', f);
@@ -120,6 +126,9 @@ for imID = 1:size(imageData, 2)
                 Color=colors(k), LineWidth=2);
         end
         disp("Saving " + name + " - " + string(algorithm));
-        saveas(f, outFile, 'png');
+        saveas(f, outFile, 'png'); 
     end
 end
+
+disp("Saving vps and calibration matrices");
+save(fullfile(outDir, 'extractedData'), 'data');

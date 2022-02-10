@@ -4,12 +4,11 @@ function [vp] = getClusterVPs(edges)
     % returns: vanishing point (in homogeneous coordinates)
     arguments
         edges(:,4) {mustBeNumeric}
-        %w(1, :) {mustBeNumeric}
     end
-    
     % Choose some possible vanishing points
     % Take the vanishing point with less sum of squared errors
     numEdges = size(edges, 1);
+    assert(numEdges > 1);
     numRanVps = numEdges ^ 2;
     %
     bestVp = [0;0;0];
