@@ -25,7 +25,9 @@ disp("Dataset located");
 set(0, 'DefaultFigureVisible', 'off');
 idxData = 0;
 data = struct('image', [], 'algorithm', [], 'numVps', 0, 'manhDirs', [], 'calibration', []);
-for imID = 1:2%size(imageData, 2)
+imNum = size(imageData, 2);
+for imID = 1:size(imageData, 2)
+    disp("------ " + string(imID * 100 / imNum) + "% -----");
     %% Pre-processing: get the lines
     refImg = imageData(imID).imageFile;
     [~, name, ~] = fileparts(refImg);

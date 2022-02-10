@@ -88,7 +88,7 @@ end
 function [internal, endpoints, junctions] = getGraphConnections(img, debug)
     % getGraphConnections: return classification masks for the edges
     % use threshold to help canny
-    t = adaptthresh(img, 0.7);
+    t = adaptthresh(img, 0.6);
     bw = imbinarize(img, t);
     bw = imclose(bw, strel('disk', 10));
     % Canny edge detection
