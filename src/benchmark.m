@@ -22,28 +22,36 @@ for d = 1:size(data, 2)
       gtVps(:, direction) = averageVP( ...
           double(segments( vp_association == direction, :)) );
     end
-    % Find the differences between the clostest vanishing points in gt and
+    % Find the differences between the axes directions in gt and
     % the experimental ones
     expVps = data(d).manhDirs;
-    expVps = expVps(1:2, :) ./ expVps(3, :);
-    gtVps = gtVps(1:2, :) ./ gtVps(3, :);
-    for vix = 1:data(k).numVps
-        % get closest and don't consider anymore
-        diff = [];
-        diff(1, :) = gtVps(1, :) - expVps(2, vix);
-        diff(2, :) = gtVps(2, :) - expVps(1, vix);
-        sqdiff = diff(1,:).^2 + diff(2,:).^2;
-        m = min(sqdiff);
-        argm = find( sqdiff == m, 1 );
-        gtVps(:, argm) = [];
-        if data(d).algorithm == algorithms.jaccard
-            vpCountJ = vpCountJ + 1;
-            jaccardVpErrors(:, vpCountJ) = diff(:, argm);
-        elseif data(d).algorithm == algorithms.tanimoto
-            vpCountT = vpCountT + 1;
-            tanimotoVpErrors(:, vpCountT) = diff(:, argm);
-        end
-    end 
+    if size(expVps,1) == 0; continue; end
+    % sanity check: delete possible NaN/Inf
+    [~, sanitizec] = find(expVps == Inf | expVps == -Inf | isnan(expVps));
+    expVps(:, sanitizec) = [];
+    [~, sanitizec] = find(gtVps == Inf | gtVps == -Inf | isnan(gtVps)); %TODO I should not generate these
+    gtVps(:, sanitizec) = [];
+    % Extract directions
+    expDir = expVps(1:2, :); expDir = expDir ./ vecnorm(expDir);
+    gtDir = gtVps(1:2, :); gtDir = gtDir ./ vecnorm(gtDir);
+    if size(gtVps, 2) == 3 % TODO this check is only temporary, remove
+        for vix = 1:size(expDir, 2)
+            % get closest and don't consider anymore
+            cosSimilarity = acos(expDir(:, vix)' * gtDir); %TODO are coordinatres inverted?
+            m = min(cosSimilarity);
+            argm = find( cosSimilarity == m, 1 );
+            dmin = gtDir(:, argm) - expDir(:, vix);
+            gtDir(:, argm) = [];
+            if data(d).algorithm == algorithms.jaccard && norm(dmin) <= 1 %TODO put this sanity check somewhere else
+                vpCountJ = vpCountJ + 1;
+                % sanity check
+                jaccardVpErrors(:, vpCountJ) = dmin;
+            elseif data(d).algorithm == algorithms.tanimoto && norm(dmin) <= 1
+                vpCountT = vpCountT + 1;
+                tanimotoVpErrors(:, vpCountT) = dmin;
+            end
+        end 
+    end
 end
 %% Show data
 
@@ -56,6 +64,7 @@ plot(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), 'ro');
 plot(0, 0, 'gx');
 %}
 f3 = figure(); figure(f3), title("Tanimoto vs Jaccard vp errors"), hold on, axis equal;
+viscircles([0 0], 1, color='black');
 plot(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), 'ro');
 plot(jaccardVpErrors(1,:), jaccardVpErrors(2,:), 'b*');
 legend({'tanimoto error', 'jaccard error', 'ground truth'})
@@ -63,8 +72,8 @@ plot(0, 0, 'gx');
 
 
 f4 = figure(); figure(f4), title("Distance from ground truth vanishing point"), hold on;
-histogram(sqrt( tanimotoVpErrors(1,:) .^2 + tanimotoVpErrors(2,:).^2 ), FaceColor='red', BinWidth=500, FaceAlpha=0.5);
-histogram(sqrt( jaccardVpErrors(1,:) .^2 + jaccardVpErrors(2,:).^2 ), FaceColor='blue', BinWidth=500, FaceAlpha=0.5);
+histogram(vecnorm(tanimotoVpErrors), FaceColor='red', NumBins=20, FaceAlpha=0.5);
+histogram(vecnorm(jaccardVpErrors), FaceColor='blue', NumBins=20, FaceAlpha=0.5);
 legend({'tanimoto distance', 'jaccard distance'});
 
 
