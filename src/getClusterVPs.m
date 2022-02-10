@@ -1,7 +1,6 @@
 function [vp] = getClusterVPs(edges)
     % getClusterVPs: returns the vanishing point associated to a set of edges
     % edges: the edges of the cluster
-    % w: ??? TODO
     % returns: vanishing point (in homogeneous coordinates)
     arguments
         edges(:,4) {mustBeNumeric}
@@ -11,7 +10,7 @@ function [vp] = getClusterVPs(edges)
     % Choose some possible vanishing points
     % Take the vanishing point with less sum of squared errors
     numEdges = size(edges, 1);
-    numRanVps = numEdges ^ 1.3;
+    numRanVps = numEdges ^ 2;
     %
     bestVp = [0;0;0];
     minDist = Inf;

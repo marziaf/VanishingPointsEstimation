@@ -72,7 +72,37 @@ for imID = 1:size(imageData, 2)
         
         manhDir = manhattanDirections(classification);
         disp("> Obtained manhattan directions");
+        %% Calibration
+        hasBeenCalibrated = false;
+        if size(manhDir, 2) == 3
+            vps = [ manhDir(1).vp manhDir(2).vp manhDir(3).vp ];
+            vps = vps ./ vps(3,:);
         
+            % Impose orthogonality
+            syms u0s v0s fs; % a = 1 -> fx=fy
+            Kest = [ fs 0 u0s; 0 fs v0s; 0 0 1];
+            %omega = inv(Kest * Kest');
+            omega = [1, 0, -u0s; 0, 1, -v0s; -u0s, - v0s, fs^2 + u0s^2 + v0s^2];
+            sys = [ vps(:,1).' * omega * vps(:,2) == 0, ...
+                vps(:,1).' * omega * vps(:,3) == 0, vps(:,2).' * omega * vps(:,3) == 0 ];
+            S = solve(sys, [u0s, v0s, fs], Real=true);
+            if ~isempty(S.u0s)
+                % of the two solutions, take the one with positive focal distance
+                k = find(S.fs > 0, 1);
+                % principal point
+                u0 = double( S.u0s(k) );
+                v0 = double( S.v0s(k) );
+                % focal distance
+                f = double( S.fs(k) );
+                % K
+                Kest = subs(Kest, u0s, u0);
+                Kest = subs(Kest, v0s, v0);
+                Kest = subs(Kest, fs, f);
+                hasBeenCalibrated = true;
+            end
+        else
+            disp("Not enough vanishing points extracted to calibrate the image!")
+        end
         %% Visual check
         f = figure(Visible="off"); 
         set(0, 'currentfigure', f);
