@@ -66,23 +66,33 @@ manhDir = manhattanDirections(classification);
 disp("Obtained manhattan directions");
 
 %% Calibration
-
+hasBeenCalibrated = false;
 if size(manhDir, 2) == 3
     vps = [ manhDir(1).vp manhDir(2).vp manhDir(3).vp ];
-    % Get the principal point
-    principalPoint = orthocenter(vps(1:2,1) ./ vps(3, 1), ...
-        vps(1:2,2) ./ vps(3, 2), vps(1:2,3) ./ vps(3, 3));
+    vps = vps ./ vps(3,:);
 
     % Impose orthogonality
-    syms fy fx
-    u0 = principalPoint(1);
-    v0 = principalPoint(2);
-    % omega = [a^2 0 -u0 * a^2; 0 1 -v0; -u0 * a^2 -v0 fy^2 + a^2 * u0^2 + v0^2];
-    a = fx / fy;
-    K = [ fx 0 u0; 0 fy v0; 0 0 1];
-    omega = inv(K * K');
-    sys = [ vps(:,1)' * omega * vps(:,2) == 0, vps(:,1)' * omega * vps(:,3) == 0 ];
-    S = solve(sys, [fx, fy]);
+    syms u0s v0s fs; % a = 1 -> fx=fy
+    Kest = [ fs 0 u0s; 0 fs v0s; 0 0 1];
+    %omega = inv(Kest * Kest');
+    omega = [1, 0, -u0s; 0, 1, -v0s; -u0s, - v0s, fs^2 + u0s^2 + v0s^2];
+    sys = [ vps(:,1).' * omega * vps(:,2) == 0, ...
+        vps(:,1).' * omega * vps(:,3) == 0, vps(:,2).' * omega * vps(:,3) == 0 ];
+    S = solve(sys, [u0s, v0s, fs], Real=true);
+    if ~isempty(S.u0s)
+        % of the two solutions, take the one with positive focal distance
+        k = find(S.fs > 0, 1);
+        % principal point
+        u0 = double( S.u0s(k) );
+        v0 = double( S.v0s(k) );
+        % focal distance
+        f = double( S.fs(k) );
+        % K
+        Kest = subs(Kest, u0s, u0);
+        Kest = subs(Kest, v0s, v0);
+        Kest = subs(Kest, fs, f);
+        hasBeenCalibrated = true;
+    end
 else
     disp("Not enough vanishing points extracted to calibrate the image!")
 end
@@ -90,15 +100,16 @@ end
 
 %% Visual check
 
-figure, imshow(refImg), hold on, axis auto;
-plot(principalPoint(2), principalPoint(1), Color='yellow', Marker="*", MarkerSize=20, LineWidth=5)
+figure(Visible="on"), imshow(refImg), hold on, axis auto;
+if hasBeenCalibrated 
+    plot(v0, u0, Color='yellow', Marker="*", MarkerSize=20, LineWidth=5)
+end
 colors = ["red", "green", "blue"];
 for k = 1:size(manhDir, 2)
     for e = 1:size(manhDir(k).edges, 1)
         edge = manhDir(k).edges(e, :);
         plot(edge(2:2:4), edge(1:2:4), Color=colors(k)); % TODO somewhere the coordinates are inverted
         v = manhDir(k).vp;
-        plot(v(2) / v(3), v(1) / v(3), Color=colors(k), Marker="+", MarkerSize=20, LineWidth=5);
+        %plot(v(2) / v(3), v(1) / v(3), Color=colors(k), Marker="+", MarkerSize=20, LineWidth=5);
     end
 end
-

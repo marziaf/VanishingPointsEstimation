@@ -10,7 +10,7 @@ function [vp] = getClusterVPs(edges)
     % Choose some possible vanishing points
     % Take the vanishing point with less sum of squared errors
     numEdges = size(edges, 1);
-    numRanVps = numEdges ^ 1.3;
+    numRanVps = numEdges ^ 2;
     %
     bestVp = [0;0;0];
     minDist = Inf;
