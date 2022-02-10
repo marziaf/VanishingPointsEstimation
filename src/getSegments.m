@@ -8,7 +8,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
     
     arguments
         imgFile {mustBeFile}
-        minLength {mustBeNumeric} = 100
+        minLength {mustBeNumeric} = 60
         debug logical = false
     end
     
@@ -87,9 +87,16 @@ end
 
 function [internal, endpoints, junctions] = getGraphConnections(img, debug)
     % getGraphConnections: return classification masks for the edges
-
+    % use threshold to help canny
+    t = adaptthresh(img, 0.7);
+    bw = imbinarize(img, t);
+    bw = imclose(bw, strel('disk', 10));
     % Canny edge detection
     edgesImg = edge(img, 'canny');
+    edgesBw = edge(bw, 'canny');
+    % Merge edges found
+    edgesImg = edge( edgesImg | edgesBw, 'canny' );
+
     if debug
         figure, imshow(edgesImg), title("Canny");
     end

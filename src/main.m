@@ -25,7 +25,7 @@ disp("Dataset located");
 set(0, 'DefaultFigureVisible', 'off');
 idxData = 0;
 data = struct('image', [], 'algorithm', [], 'numVps', 0, 'manhDirs', [], 'calibration', []);
-for imID = 1:20%size(imageData, 2)
+for imID = 1:2%size(imageData, 2)
     %% Pre-processing: get the lines
     refImg = imageData(imID).imageFile;
     [~, name, ~] = fileparts(refImg);
@@ -74,10 +74,9 @@ for imID = 1:20%size(imageData, 2)
         disp("> Obtained manhattan directions");
         %% Calibration
         hasBeenCalibrated = false;
-        if size(manhDir, 2) == 3
-            vps = [ manhDir(1).vp manhDir(2).vp manhDir(3).vp ];
+        vps = [ manhDir.vp ];
+        if size(vps, 2) == 3
             vps = vps ./ vps(3,:);
-        
             % Impose orthogonality
             syms u0s v0s fs; % a = 1 -> fx=fy
             Kest = [ fs 0 u0s; 0 fs v0s; 0 0 1];
