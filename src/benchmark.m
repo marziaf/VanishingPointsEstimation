@@ -5,6 +5,7 @@ sourceImgDir = fullfile(datasetDir, "tvpd_dataset");
 load( fullfile(outDir, 'extractedData.mat') );
 load( fullfile(datasetDir, "camera_intrinsics.mat") );
 
+
 %% Compare the vanishing points with the ground truth
 numImgs = size(data, 2) / 2;
 % Store the difference between the ground truth vanishing points and the
@@ -47,9 +48,39 @@ for d = 1:size(data, 2)
     end 
 
 end
-%% Show data
+%% Compare the calibration matrices with ground truth
+jaccadKFError = [];
+tanimotoKFError = [];
+jaccardKUVError = [];
+tanimotoKUVError = [];
+jKcount = 0;
+tKcount = 0;
+gtF = K(1,1);
+gtUV = K(1:2, 3);
+for d = 1:size(data, 2)
+    load(fullfile(sourceImgDir, data(d).image + ".mat"));
+    if size(data(d).calibration,1) == 0; continue; end
+    % Compare
+    diffF = gtF - data(d).calibration(1,1);
+    diffUV = gtUV - data(d).calibration(1:2, 3);
+    if data(d).algorithm == algorithms.jaccard
+        jKcount = jKcount + 1;
+        jaccardKUVError(:, jKcount) = diffUV;
+        jaccadKFError(jKcount) = diffF;
+    elseif data(d).algorithm == algorithms.tanimoto
+        tKcount = tKcount + 1;
+        tanimotoKUVError(:, tKcount) = diffUV;
+        tanimotoKFError(tKcount) = diffF;
+    end
+end
 
-f3 = figure(); figure(f3), title("Tanimoto vs Jaccard vp errors"), hold on, axis equal;
+
+%% Show data
+%% VPS
+set(0, 'DefaultFigureVisible', 'on');
+
+
+f3 = figure(); figure(f3), title("Tanimoto vs Jaccard direction angular errors"), hold on, axis equal;
 viscircles([0 0], 1, color='black');
 viscircles([0 0], 2, color='black')
 plot(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), 'ro');
@@ -58,17 +89,31 @@ plot(0, 0, 'gx');
 legend(["tanimoto error", "jaccard error", "ground truth"])
 
 
-f4 = figure(); figure(f4), title("Distance from ground truth vanishing point"), hold on;
-histogram(vecnorm(tanimotoVpErrors), FaceColor='red', NumBins=20, FaceAlpha=0.5);
-histogram(vecnorm(jaccardVpErrors), FaceColor='blue', NumBins=20, FaceAlpha=0.5);
+% TODO draw line on threshold of angle distance
+f4 = figure(); figure(f4), title("Angular distance from ground truth Manhattan directions"), hold on;
+histogram(vecnorm(tanimotoVpErrors), FaceColor='red', NumBins=20, ...
+    FaceAlpha=0.5, Normalization='probability');
+histogram(vecnorm(jaccardVpErrors), FaceColor='blue', NumBins=20, ...
+    FaceAlpha=0.5, Normalization='probability');
 legend(["tanimoto distance over " + string(size(tanimotoVpErrors, 2)) + " pts", ...
     "jaccard distance " + string(size(jaccardVpErrors, 2)) + " pts"]);
+%% Calibration
+f5 = figure(); figure(f5), title("Focal distance error"), hold on;
+histogram(tanimotoKFError, FaceColor='red', NumBins=20, ...
+    FaceAlpha=0.5, Normalization='probability');
+histogram(jaccadKFError, FaceColor='blue', NumBins=20, ...
+    FaceAlpha=0.5, Normalization='probability');
+legend("Tanimoto", "Jaccard")
+
+f6 = figure(); figure(f6), title("Principal point distance error"), hold on;
+histogram(vecnorm(tanimotoKUVError), FaceColor='red', NumBins=20, ...
+    FaceAlpha=0.5, Normalization='probability');
+histogram(vecnorm(jaccardKUVError), FaceColor='blue', NumBins=20, ...
+    FaceAlpha=0.5, Normalization='probability');
+legend("Tanimoto", "Jaccard")
 
 
-
-set(0, 'DefaultFigureVisible', 'on');
-
-
+%%
 function [dir] = edgesDirection(edges)
     % edgesDirection: average direction of the edges
     numEdges = size(edges, 1);
