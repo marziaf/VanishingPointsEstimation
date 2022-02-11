@@ -53,6 +53,8 @@ jaccadKFError = [];
 tanimotoKFError = [];
 jaccardKUVError = [];
 tanimotoKUVError = [];
+jaccUV = [];
+taniUV = [];
 jKcount = 0;
 tKcount = 0;
 gtF = K(1,1);
@@ -62,15 +64,19 @@ for d = 1:size(data, 2)
     if size(data(d).calibration,1) == 0; continue; end
     % Compare
     diffF = gtF - data(d).calibration(1,1);
-    diffUV = gtUV - data(d).calibration(1:2, 3);
+    UV(1,1) = double(data(d).calibration(2, 3)); 
+    UV(2,1) = double(data(d).calibration(1, 3));
+    diffUV = gtUV - UV;
     if data(d).algorithm == algorithms.jaccard
         jKcount = jKcount + 1;
         jaccardKUVError(:, jKcount) = diffUV;
         jaccadKFError(jKcount) = diffF;
+        jaccUV(:, jKcount) = UV;
     elseif data(d).algorithm == algorithms.tanimoto
         tKcount = tKcount + 1;
         tanimotoKUVError(:, tKcount) = diffUV;
         tanimotoKFError(tKcount) = diffF;
+        taniUV(:, tKcount) = UV;
     end
 end
 
@@ -97,6 +103,7 @@ histogram(vecnorm(jaccardVpErrors), FaceColor='blue', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
 legend(["tanimoto distance over " + string(size(tanimotoVpErrors, 2)) + " pts", ...
     "jaccard distance " + string(size(jaccardVpErrors, 2)) + " pts"]);
+
 %% Calibration
 f5 = figure(); figure(f5), title("Focal distance error"), hold on;
 histogram(tanimotoKFError, FaceColor='red', NumBins=20, ...
@@ -111,6 +118,13 @@ histogram(vecnorm(tanimotoKUVError), FaceColor='red', NumBins=20, ...
 histogram(vecnorm(jaccardKUVError), FaceColor='blue', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
 legend("Tanimoto", "Jaccard")
+
+f6 = figure(); figure(f6), title("Principal point distribution"), hold on, axis equal;
+rectangle(Position=[0 0 1920 1080]);
+plot(jaccUV(1, :), jaccUV(2,:), 'bo');
+plot(taniUV(1, :), taniUV(2, :), 'ro');
+plot(gtUV, 'gx');
+legend(["Jaccard", "Tanimoto", "Ground truth"]);
 
 
 %%
