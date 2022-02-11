@@ -26,7 +26,7 @@ set(0, 'DefaultFigureVisible', 'off');
 idxData = 0;
 data = struct('image', [], 'algorithm', [], 'numVps', 0, 'manhDirs', [], 'calibration', []);
 imNum = size(imageData, 2);
-for imID = 1:size(imageData, 2)
+for imID = 1:imNum
     disp("------ " + string(imID * 100 / imNum) + "% -----");
     %% Pre-processing: get the lines
     refImg = imageData(imID).imageFile;
@@ -134,4 +134,4 @@ for imID = 1:size(imageData, 2)
 end
 
 disp("Saving vps and calibration matrices");
-save(fullfile(outDir, 'extractedData'), 'data');
+save(fullfile(outDir, 'extractedData_test'), 'data');
