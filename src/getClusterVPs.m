@@ -1,4 +1,4 @@
-function [vp] = getClusterVPs(edges)
+function [bestVp] = getClusterVPs(edges)
     % getClusterVPs: returns the vanishing point associated to a set of edges
     % edges: the edges of the cluster
     % returns: vanishing point (in homogeneous coordinates)
@@ -25,6 +25,10 @@ function [vp] = getClusterVPs(edges)
         ssq = 0;
         for ix = 1:numEdges
             ssq = ssq + lineOps.distancePointLine(vp, lineOps.segToLine(edges(ix, :))) ^ 2;
+        end
+        if ssq < minDist
+            minDist = ssq;
+            bestVp = vp;
         end
     end
     
