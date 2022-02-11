@@ -123,7 +123,7 @@ f6 = figure(); figure(f6), title("Principal point distribution"), hold on, axis 
 rectangle(Position=[0 0 1920 1080]);
 plot(jaccUV(1, :), jaccUV(2,:), 'bo');
 plot(taniUV(1, :), taniUV(2, :), 'ro');
-plot(gtUV, 'gx');
+plot(gtUV(1), gtUV(2), 'gx');
 legend(["Jaccard", "Tanimoto", "Ground truth"]);
 
 
