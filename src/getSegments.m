@@ -17,9 +17,9 @@ function [segments] = getSegments(imgFile, minLength, debug)
     img = rgb2gray(img);
     
     % Get edges and pixel classification
-    [internal, endpoints, ~] = getGraphConnections(img, debug);
+    [internal, endpoints, junctions] = getGraphConnections(img, debug);
     % Navigate the connected components from their endpoints
-    [startx, starty] = find(endpoints);
+    [startx, starty] = find(endpoints | junctions);
     segments = [];
     lenSeg = 0;
     % Navigation variables shared to improve performance
@@ -43,7 +43,7 @@ function [segments] = getSegments(imgFile, minLength, debug)
         f = figure();
         figure(f), imshow(img), hold on;
         for k=1:size(segments, 1)
-           plot([ segments(k,2), segments(k,4)], [segments(k,1), segments(k, 3)]);
+           plot([ segments(k,2), segments(k,4)], [segments(k,1), segments(k, 3)], 'LineWidth',2);
         end
     end
 
