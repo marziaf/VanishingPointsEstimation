@@ -24,7 +24,7 @@ disp("Dataset located");
 
 set(0, 'DefaultFigureVisible', 'off');
 idxData = 0;
-data = struct('image', [], 'algorithm', [], 'numVps', 0, 'manhDirs', [], 'calibration', []);
+data = struct('image', [], 'algorithm', [], 'manhDirs', [], 'calibration', []);
 imNum = size(imageData, 2);
 for imID = 1:imNum
     disp("------ " + string(imID * 100 / imNum) + "% -----");
@@ -39,6 +39,7 @@ for imID = 1:imNum
     disp("> Segments extracted in " + t + " seconds");
 
     for algorithm = [algorithms.jaccard, algorithms.tanimoto]
+        rng('default');
         disp(">> Algorithm " + string(algorithm));
         %% Extract vanishing points: J-linkage
         
@@ -76,8 +77,9 @@ for imID = 1:imNum
         disp("> Obtained manhattan directions");
         %% Store data
         idxData = idxData + 1;
-        data(idxData) = struct('image', name, 'algorithm', algorithm, 'manhDirs', vps, 'calibration', []);
+        data(idxData) = struct('image', name, 'algorithm', algorithm, 'manhDirs', [ manhDir.vp ], 'calibration', []);
         %% Visual check
+        %{
         f = figure(Visible="off"); 
         set(0, 'currentfigure', f);
         if algorithm == algorithms.jaccard
@@ -97,8 +99,9 @@ for imID = 1:imNum
         end
         disp("Saving " + name + " - " + string(algorithm));
         saveas(f, outFile, 'png'); 
+        %}
     end
 end
 
-disp("Saving vps and calibration matrices");
-save(fullfile(outDir, 'extractedData_test'), 'data');
+disp("Saving data");
+save(fullfile(outDir, 'extractedData'), 'data');

@@ -85,7 +85,7 @@ end
 %% VPS
 set(0, 'DefaultFigureVisible', 'on');
 
-
+%%
 f3 = figure(); figure(f3), title("Tanimoto vs Jaccard direction angular errors"), hold on, axis equal;
 viscircles([0 0], 1, color='black');
 viscircles([0 0], 2, color='black')
@@ -94,15 +94,33 @@ plot(jaccardVpErrors(1,:), jaccardVpErrors(2,:), 'b*');
 plot(0, 0, 'gx');
 legend(["tanimoto error", "jaccard error", "ground truth"])
 
+%%
+f7 = figure(); figure(f7), title("Tanimoto angular errors distribution"), hold on, axis equal;
+histogram2(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), NumBins=[30, 30]);
 
-% TODO draw line on threshold of angle distance
-f4 = figure(); figure(f4), title("Angular distance from ground truth Manhattan directions"), hold on;
+f8 = figure(); figure(f8), title("Jaccard angular errors distribution"), hold on, axis equal;
+histogram2(jaccardVpErrors(1,:), jaccardVpErrors(2,:), NumBins=[30, 30]);
+
+%% 
+f4 = figure(); figure(f4), title("Distance from ground truth Manhattan directions"), hold on;
 histogram(vecnorm(tanimotoVpErrors), FaceColor='red', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
 histogram(vecnorm(jaccardVpErrors), FaceColor='blue', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
+
+medT = median(vecnorm(tanimotoVpErrors));
+medJ = median(vecnorm(jaccardVpErrors));
+meanT = mean(vecnorm(tanimotoVpErrors));
+meanJ = mean(vecnorm(jaccardVpErrors));
+line([ medT, medT ], [0 0.3], LineWidth=1, Color='red');
+line([ medJ, medJ ], [0 0.3], LineWidth=1, Color='blue');
+line([ meanT, meanT ], [0 0.3], LineWidth=1, Color='red', LineStyle='--');
+line([ meanJ, meanJ ], [0 0.3], LineWidth=1, Color='blue', LineStyle='--');
+
+
 legend(["tanimoto distance over " + string(size(tanimotoVpErrors, 2)) + " pts", ...
-    "jaccard distance " + string(size(jaccardVpErrors, 2)) + " pts"]);
+    "jaccard distance " + string(size(jaccardVpErrors, 2)) + " pts", ...
+    "tanimoto median", "jaccard median", "tanimoto mean", "jaccard mean"]);
 
 %% Calibration
 f5 = figure(); figure(f5), title("Focal distance error"), hold on;
@@ -112,6 +130,7 @@ histogram(jaccadKFError, FaceColor='blue', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
 legend("Tanimoto", "Jaccard")
 
+%%
 f6 = figure(); figure(f6), title("Principal point distance error"), hold on;
 histogram(vecnorm(tanimotoKUVError), FaceColor='red', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
@@ -119,6 +138,7 @@ histogram(vecnorm(jaccardKUVError), FaceColor='blue', NumBins=20, ...
     FaceAlpha=0.5, Normalization='probability');
 legend("Tanimoto", "Jaccard")
 
+%%
 f6 = figure(); figure(f6), title("Principal point distribution"), hold on, axis equal;
 rectangle(Position=[0 0 1920 1080]);
 plot(jaccUV(1, :), jaccUV(2,:), 'bo');

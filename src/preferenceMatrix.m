@@ -12,7 +12,7 @@ function [preference] = preferenceMatrix(segments, type, thresh, numHyp, debugIm
         segments(:,4) {mustBeNumeric}
         type algorithms
         thresh {mustBePositive} = autoThresh(type)
-        numHyp  {mustBePositive} = int16(size(segments, 1) ^ 1.3)
+        numHyp  {mustBePositive} = 500 %int16(size(segments, 1) ^ 1.3)
         debugImg {mustBeFile} = "preferenceMatrix.m"; %TODO wow, such an awful solution
     end
 

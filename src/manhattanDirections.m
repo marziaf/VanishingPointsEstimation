@@ -1,7 +1,6 @@
 function [manhDir] = manhattanDirections(classes)
     % manhattanDirections: returns the sets of edges and their associated 
     % vanishing point for the three main directions
-    % v: vanishing point
     % classes: struct array with parameters {vp, edges}, that is a set of
     % edges and its associated vanishing point
     arguments
