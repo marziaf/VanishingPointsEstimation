@@ -10,6 +10,17 @@ classdef algorithms
             c = lineOps.distancePointLine([e(1); e(2); 1], l);
         end
 
+        function [sc] = setConsistency(v, segs)
+            % setConsistency: cumulative consistency of a vanishing point
+            % with the set edges
+            % v: vanishing point
+            % segs: segments of a cluster
+            sc = 0;
+            for s=1:size(segs, 1)
+                sc = sc + algorithms.consistency(v, segs(s, :));
+            end
+        end
+
         %% PREFERENCE MATRIX UTILS
         function [p] = jaccardPreferenceFun(v, e, thresh)
             % jaccardPreference: the function used to compute the 

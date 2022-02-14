@@ -21,13 +21,10 @@ function [bestVp] = getClusterVPs(edges)
             s2 = edges(randi(numEdges),:);
         end
         vp = cross(lineOps.segToLine(s1), lineOps.segToLine(s2));
-        % sse
-        ssq = 0;
-        for ix = 1:numEdges
-            ssq = ssq + lineOps.distancePointLine(vp, lineOps.segToLine(edges(ix, :))) ^ 2;
-        end
-        if ssq < minDist
-            minDist = ssq;
+        % set consistency
+        sc = algorithms.setConsistency(vp, edges);
+        if sc < minDist
+            minDist = sc;
             bestVp = vp;
         end
     end

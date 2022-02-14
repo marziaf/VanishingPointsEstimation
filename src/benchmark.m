@@ -25,7 +25,7 @@ for d = 1:size(data, 2)
           double(segments( vp_association == direction, :)) );
     end
     % Get the direction of the vanishing points of the experimental data
-    expVps = data(d).manhDirs;
+    expVps = data(d).vps;
     if size(expVps,1) == 0; continue; end
     % sanity check: delete possible NaN/Inf
     [~, sanitizec] = find(expVps == Inf | expVps == -Inf | isnan(expVps));

@@ -13,18 +13,18 @@ for d = 1:size(data, 2)
     end
     hasBeenCalibrated = false;
     % sanity check: delete possible NaN/Inf
-    [~, sanitizec] = find(data(d).manhDirs == Inf | data(d).manhDirs == -Inf | isnan(data(d).manhDirs));
-    data(d).manhDirs(:, sanitizec) = []; 
+    [~, sanitizec] = find(data(d).vps == Inf | data(d).vps == -Inf | isnan(data(d).vps));
+    data(d).vps(:, sanitizec) = []; 
 
     % Check if calibration is possible
-    if size(data(d).manhDirs, 2) < 3; continue; end
+    if size(data(d).vps, 2) < 3; continue; end
 
-    vps = data(d).manhDirs;
+    vps = data(d).vps;
     vps = vps ./ vecnorm(vps);
     % Impose orthogonality
     data(d).calibration = findKauto(vps(:,1), vps(:,2), vps(:,3));
 
-    save(dataFile, "data"); %TODO
+    save(dataFile, "data");
 end
 
 disp("Calibration complete")

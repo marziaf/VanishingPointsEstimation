@@ -24,7 +24,7 @@ disp("Dataset located");
 
 set(0, 'DefaultFigureVisible', 'off');
 idxData = 0;
-data = struct('image', [], 'algorithm', [], 'manhDirs', [], 'calibration', []);
+data = struct('image', [], 'algorithm', [], 'clusters', struct('vp', [], 'edges', []), 'vps', [], 'calibration', []);
 imNum = size(imageData, 2);
 for imID = 1:imNum
     disp("------ " + string(imID * 100 / imNum) + "% -----");
@@ -77,7 +77,13 @@ for imID = 1:imNum
         disp("> Obtained manhattan directions");
         %% Store data
         idxData = idxData + 1;
-        data(idxData) = struct('image', name, 'algorithm', algorithm, 'manhDirs', [ manhDir.vp ], 'calibration', []);
+        data(idxData) = struct('image', name, 'algorithm', algorithm, 'clusters', manhDir,  'vps', [ manhDir.vp ], 'calibration', []);
+
+        %% Backup save every x images
+        if mod(imID, 10) == 0
+            disp("Data backup");
+            save(fullfile(outDir, 'extractedData'), 'data');
+        end
         %% Visual check
         %{
         f = figure(Visible="off"); 
