@@ -22,9 +22,9 @@ function [bestVp] = getClusterVPs(edges)
         end
         vp = cross(lineOps.segToLine(s1), lineOps.segToLine(s2));
         % set consistency
-        sc = algorithms.setConsistency(vp, edges);
-        if sc < minDist
-            minDist = sc;
+        err = algorithms.setConsistency(vp, edges);
+        if err < minDist
+            minDist = err;
             bestVp = vp;
         end
     end

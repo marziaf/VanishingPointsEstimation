@@ -5,14 +5,18 @@ sourceImgDir = fullfile(datasetDir, "tvpd_dataset");
 load( fullfile(outDir, 'extractedData.mat') );
 load( fullfile(datasetDir, "camera_intrinsics.mat") );
 
+outGraphDir = fullfile(outDir, "benchmarks");
+if ~exist(outGraphDir, 'dir')
+    mkdir(outGraphDir);
+end
+
 
 %% Compare the vanishing points with the ground truth
 numImgs = size(data, 2) / 2;
 % Store the difference between the ground truth vanishing points and the
 % extracted ones
-%numVps = 
-jaccardVpErrors = []; %zeros(2, 3*numImgs);
-tanimotoVpErrors = []; %zeros(2, 3*numImgs);
+jaccardVpErrors = [];
+tanimotoVpErrors = [];
 vpCountJ = 0; vpCountT = 0;
 for d = 1:size(data, 2)
     load(fullfile(sourceImgDir, data(d).image + ".mat"));
@@ -86,7 +90,7 @@ end
 set(0, 'DefaultFigureVisible', 'on');
 
 %%
-f3 = figure(); figure(f3), title("Tanimoto vs Jaccard direction angular errors"), hold on, axis equal;
+f = figure(); figure(f), title("Tanimoto vs Jaccard direction angular errors"), hold on, axis equal;
 viscircles([0 0], 1, color='black');
 viscircles([0 0], 2, color='black')
 plot(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), 'ro');
@@ -94,18 +98,26 @@ plot(jaccardVpErrors(1,:), jaccardVpErrors(2,:), 'b*');
 plot(0, 0, 'gx');
 legend(["tanimoto error", "jaccard error", "ground truth"])
 
+saveas(f, fullfile(outGraphDir, "angular_errors_vp"), 'png');
 %%
-f7 = figure(); figure(f7), title("Tanimoto angular errors distribution"), hold on, axis equal;
-histogram2(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), NumBins=[30, 30]);
+f = figure(); figure(f), title("Angular error distribution Jaccard");
+histogram2(jaccardVpErrors(1,:), jaccardVpErrors(2,:), BinWidth=0.1, DisplayStyle="tile");
+colorbar;
 
-f8 = figure(); figure(f8), title("Jaccard angular errors distribution"), hold on, axis equal;
-histogram2(jaccardVpErrors(1,:), jaccardVpErrors(2,:), NumBins=[30, 30]);
+saveas(f, fullfile(outGraphDir, "angular_errors_vp_dist_jacc"), 'png');
+
+%%
+f = figure(); figure(f), title("Angular error distribution Tanimoto");
+histogram2(tanimotoVpErrors(1,:), tanimotoVpErrors(2,:), BinWidth=0.1, DisplayStyle="tile");
+colorbar;
+
+saveas(f, fullfile(outGraphDir, "angular_errors_vp_dist_tani"), 'png');
 
 %% 
-f4 = figure(); figure(f4), title("Distance from ground truth Manhattan directions"), hold on;
-histogram(vecnorm(tanimotoVpErrors), FaceColor='red', NumBins=20, ...
+f = figure(); figure(f), title("Distance from ground truth Manhattan directions"), hold on;
+histogram(vecnorm(tanimotoVpErrors), FaceColor='red', BinWidth=0.1, ...
     FaceAlpha=0.5, Normalization='probability');
-histogram(vecnorm(jaccardVpErrors), FaceColor='blue', NumBins=20, ...
+histogram(vecnorm(jaccardVpErrors), FaceColor='blue', BinWidth=0.1, ...
     FaceAlpha=0.5, Normalization='probability');
 
 medT = median(vecnorm(tanimotoVpErrors));
@@ -119,33 +131,54 @@ line([ meanJ, meanJ ], [0 0.3], LineWidth=1, Color='blue', LineStyle='--');
 
 
 legend(["tanimoto distance over " + string(size(tanimotoVpErrors, 2)) + " pts", ...
-    "jaccard distance " + string(size(jaccardVpErrors, 2)) + " pts", ...
+    "jaccard distance over " + string(size(jaccardVpErrors, 2)) + " pts", ...
     "tanimoto median", "jaccard median", "tanimoto mean", "jaccard mean"]);
 
-%% Calibration
-f5 = figure(); figure(f5), title("Focal distance error"), hold on;
-histogram(tanimotoKFError, FaceColor='red', NumBins=20, ...
+saveas(f, fullfile(outGraphDir, "distance_errors_vp"), 'png');
+
+%% 
+f = figure(); figure(f), title("Focal distance error"), hold on;
+histogram(tanimotoKFError, FaceColor='red', BinWidth=100, ...
     FaceAlpha=0.5, Normalization='probability');
-histogram(jaccadKFError, FaceColor='blue', NumBins=20, ...
+histogram(jaccadKFError, FaceColor='blue', BinWidth=100, ...
     FaceAlpha=0.5, Normalization='probability');
 legend("Tanimoto", "Jaccard")
 
+saveas(f, fullfile(outGraphDir, "f_dist_err"), 'png');
+
 %%
-f6 = figure(); figure(f6), title("Principal point distance error"), hold on;
-histogram(vecnorm(tanimotoKUVError), FaceColor='red', NumBins=20, ...
+f = figure(); figure(f), title("Principal point distance error"), hold on;
+histogram(vecnorm(tanimotoKUVError), FaceColor='red', BinWidth=200, ...
     FaceAlpha=0.5, Normalization='probability');
-histogram(vecnorm(jaccardKUVError), FaceColor='blue', NumBins=20, ...
+histogram(vecnorm(jaccardKUVError), FaceColor='blue', BinWidth=200, ...
     FaceAlpha=0.5, Normalization='probability');
 legend("Tanimoto", "Jaccard")
 
+saveas(f, fullfile(outGraphDir, "princ_point_dist_err"), 'png');
+
 %%
-f6 = figure(); figure(f6), title("Principal point distribution"), hold on, axis equal;
+f = figure(); figure(f), title("Principal point distribution"), hold on, axis equal;
 rectangle(Position=[0 0 1920 1080]);
 plot(jaccUV(1, :), jaccUV(2,:), 'bo');
 plot(taniUV(1, :), taniUV(2, :), 'ro');
-plot(gtUV(1), gtUV(2), 'gx');
-legend(["Jaccard", "Tanimoto", "Ground truth"]);
+plot(gtUV(1), gtUV(2), "g*", LineWidth = 2, MarkerSize=20);
 
+medJ = median(jaccUV, 2);
+medT = median(taniUV, 2);
+
+plot(medJ(1), medJ(2), "b*", LineWidth = 2, MarkerSize=20);
+plot(medT(1), medT(2), "r*", LineWidth = 2, MarkerSize=20);
+
+
+legend(["Jaccard over " + size(jaccUV, 2) + " K", ...
+    "Tanimoto over " + size(taniUV, 2) + " K", ...
+    "Ground truth", ...
+    "Jaccard median", ...
+    "Tanimoto median"]);
+
+saveas(f, fullfile(outGraphDir, "princ_point_dist"), 'png');
+
+%%
 
 %%
 function [dir] = edgesDirection(edges)

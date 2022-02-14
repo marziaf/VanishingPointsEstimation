@@ -12,8 +12,9 @@ for k=1:size(imageFileNames)
 end
 
 outDir = "../output";
-outDirImJ = fullfile(outDir, "jaccImg");
-outDirImT = fullfile(outDir, "taniImg");
+outDirCluster = fullfile(outDir, "clustering");
+outDirImJ = fullfile(outDirCluster, "jaccImg");
+outDirImT = fullfile(outDirCluster, "taniImg");
 if ~exist(outDirImT, 'dir')
     mkdir(outDirImT);
 end
@@ -85,7 +86,7 @@ for imID = 1:imNum
             save(fullfile(outDir, 'extractedData'), 'data');
         end
         %% Visual check
-        %{
+        
         f = figure(Visible="off"); 
         set(0, 'currentfigure', f);
         if algorithm == algorithms.jaccard
@@ -105,7 +106,7 @@ for imID = 1:imNum
         end
         disp("Saving " + name + " - " + string(algorithm));
         saveas(f, outFile, 'png'); 
-        %}
+        
     end
 end
 

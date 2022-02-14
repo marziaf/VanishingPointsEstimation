@@ -12,12 +12,16 @@ classdef algorithms
 
         function [sc] = setConsistency(v, segs)
             % setConsistency: cumulative consistency of a vanishing point
-            % with the set edges
+            % with the set edges. Segments weights based on their length
             % v: vanishing point
             % segs: segments of a cluster
             sc = 0;
             for s=1:size(segs, 1)
-                sc = sc + algorithms.consistency(v, segs(s, :));
+                sc = sc + algorithms.consistency(v, segs(s, :)) / len(segs(s,:));
+            end
+
+            function l = len(s)
+                l = sqrt( (s(1) - s(3))^2 + (s(2) - s(3))^2 );
             end
         end
 
